@@ -5,6 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN pip install --upgrade pip
+RUN pip install python-multipart
 RUN pip install fastapi uvicorn mysql-connector-python passlib[bcrypt] python-jose[cryptography] apscheduler
 
 EXPOSE 8000
