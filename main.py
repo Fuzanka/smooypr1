@@ -92,11 +92,11 @@ ESTADOS_AVISOS = [
 def conectar_db():
     try:
         connection = mysql.connector.connect(
-            host=os.environ.get("MYSQL_HOST"),
-            database=os.environ.get("MYSQL_DATABASE"),
-            user=os.environ.get("MYSQL_USER"),
-            password=os.environ.get("MYSQL_PASSWORD"),
-            port=int(os.environ.get("MYSQL_PORT", 3306))
+            host='212.227.147.252',
+            database='dbs14217095',
+            user='root',
+            password='W$x*$r2!QE',
+            port=8000
         )
         if connection.is_connected():
             # print("Conexión a MySQL establecida correctamente")
