@@ -92,11 +92,11 @@ ESTADOS_AVISOS = [
 def conectar_db():
     try:
         connection = mysql.connector.connect(
-            host='212.227.147.252',
-            database='dbs14217095',
+            host="127.0.0.1",
+            database='smooydb',
             user='root',
             password='W$x*$r2!QE',
-            port=8000
+            port=3306
         )
         if connection.is_connected():
             # print("Conexión a MySQL establecida correctamente")
@@ -2647,11 +2647,11 @@ def get_password_hash(password):
 def conectar_db():
     try:
         connection = mysql.connector.connect(
-            host=os.environ.get("MYSQL_HOST"),
-            database=os.environ.get("MYSQL_DATABASE"),
-            user=os.environ.get("MYSQL_USER"),
-            password=os.environ.get("MYSQL_PASSWORD"),
-            port=int(os.environ.get("MYSQL_PORT", 3306))
+            host="127.0.0.1",
+            database='smooydb',
+            user='root',
+            password='W$x*$r2!QE',
+            port=3306
         )
         if connection.is_connected():
             # print("Conexión a MySQL establecida correctamente")
@@ -3328,11 +3328,10 @@ async def generar_tareas_proceso(proceso_id: int = Path(...)):
         # Definir tareas según el tipo de proceso
         if tipo_proceso == "APERTURA":
             tareas = [
-                {"nombre": "MODO NOCHE MÁQUINAS YOGUR", "descripcion": "Poner máquinas de yogur en modo noche, se deben poner las máquinas de yogur en modo noche, realizando una FOTO de las temperaturas.", "orden": 1},
-                {"nombre": "GUARDAR + TAPAR TOPPING", "descripcion": "Guardar topping frutas en el frigo. Tapar toppings del mostrador. Cerrar las bolsas de topping indicando fecha de apertura. Se deben adjuntar las imágenes - FOTO topping guardado.", "orden": 2},
-                {"nombre": "LIMPIEZA MOSTRADOR", "descripcion": "Se debe hacer una limpieza del mostrador. Adjuntar imágenes de la zona en perfecto estado: - FOTO del mostrador, cubetas, y vitrinas del cristal limpias.", "orden": 3},
-                {"nombre": "LIMPIEZA GENERAL", "descripcion": "Se debe efectuar una limpieza de maquinarias de: - Maquinaria Sweet - Granizadoras - Utensilios de cocina - Mobiliario - Local - WC. Se deben adjuntar las siguientes imágenes: FOTO maquinaria sweet, FOTO granizadoras, FOTO utensilios de cocina, FOTO mobiliario, FOTO local, FOTO WC.", "orden": 4},
-                {"nombre": "CIERRE CAJA", "descripcion": "Se debe efectuar el cierre de la caja. Se debe realizar \"Z ciega\" en el TPV. Adjuntar FOTO sobre el cierre completado.", "orden": 5}
+                {"nombre": "MÁQUINA YOGUR Y DELIVERY", "descripcion": "Se deben realizar los siguientes pasos para el correcto funcionamiento de la maquinaria. \n-Puesta en marcha de la maquinaria (indicar en comentarios si el funcionamiento es OK).\n-Limpieza de la maquinaria (2 FOTOS una de las cubas limpias y otra del frontal de las máquinas).\n-Probar el producto (indicar en comentarios si el producto es OK).\nLAS MÁQUINAS SE LIMPIAN EN DÍAS ALTERNOS DE LUNES A VIERNES.\n-Aportar 1 FOTO de tablets y datáfonos de Delivery encendidos (Glovo, Just Eat, y Uber Eats) y revisad que los productos que se ofertan en cada Tablet son los correctos modificándolo si hay alguno que no tenéis.", "orden": 1},
+                {"nombre": "MESA TOPPING Y FREEZERS", "descripcion": "Se debe dejar la mesa de los TOPPINGS perfecta para la entrada de los clientes, y además se debe realizar el TRITURADO y la LIMPIEZA de los granizados. Adjuntar fotos: \n-MESA TOPPING (FOTO de todos los toppings completos) \n-MOSTRADOR (FOTO desde el frontal, como ve el cliente el mostrador) \n-GRANIZADOS (FOTO con los recipientes de granizados una vez pasado el brazo triturador). Se debe dejar previamente atemperado el producto para evitar introducir el brazo triturador en el bloque granizado. Se debe sacar el cacillo de servicio por la noche para evitar que se quede congelado dentro del granizado. \n-EXPOSITOR CREAM (FOTO del expositor cream limpio y lleno, si teneis cream en vuestro espacio)", "orden": 2},
+                {"nombre": "TEMPERATURAS", "descripcion": "Debemos hacer el seguimiento de las temperaturas:\nSe debe adjuntar una imágen de la HOJA DEL REGISTRO:\n-FOTO de la hoja de registro de la temperaturas una vez completada.", "orden": 3},
+                {"nombre": "UNIFORME", "descripcion": "Llevar uniforme completo y limpio.\nAdjuntar FOTO sin cara del uniforme completo (Gorra o bandana, camiseta, delantales, pantalón, y calzado).", "orden": 4}
             ]
         elif tipo_proceso == "CIERRE":
             tareas = [
@@ -3344,24 +3343,28 @@ async def generar_tareas_proceso(proceso_id: int = Path(...)):
             ]
         elif tipo_proceso == "TRASCURSO DE JORNADA" or tipo_proceso == "TRASCURSO DE LA JORNADA":
             tareas = [
-                {"nombre": "Revisión de inventario", "descripcion": "Comprobar niveles de inventario", "orden": 1},
-                {"nombre": "Limpieza de áreas comunes", "descripcion": "Mantener áreas comunes limpias", "orden": 2},
-                {"nombre": "Control de temperatura", "descripcion": "Verificar temperaturas de equipos", "orden": 3}
+                {"nombre": "PREPARACIÓN PRODUCTO", "descripcion": "Se debe preparar y completar las hojas de registro con los lotes empleados:\n-HELADO\n-GRANIZADO\n-SWEET\n-CREAM (sólo establecimientos CREAM).\nAdjuntar imágenes de las hojas de los lotes completados\n-HELADO\n-GRANIZADO\n-SWEET\n-CREAM", "orden": 1},
+                {"nombre": "LIMPIEZA WC (16:00)", "descripcion": "Realizar revisión y limpieza del WC, reponer papel y jabón en caso de que falte\nAdjuntar FOTO del estado del WC y de la hoja de registro de limpeza de WC completada.", "orden": 2},
+                {"nombre": "LIMPIEZA WC (20:00)", "descripcion": "Realizar revisión y limpieza del WC, reponer papel y jabón en caso de que falte\nAdjuntar FOTO del estado del WC y de la hoja de registro de limpeza de WC completada.", "orden": 3},
+                {"nombre": "UNIFORME", "descripcion": "Llevar uniforme completo y limpio.\nAdjuntar FOTO sin cara del uniforme completo (Gorra o bandana, camiseta, delantales, pantalón, y calzado).", "orden": 4},
+                {"nombre": "COMPROBACIÓN FUNCIONAMIENTO BOMBAS MÁQUINAS HELADO", "descripcion": "Se debe comprobar que el funcionamiento de las bombas de las máquinas heladoras es correcto.\nINCLUIR FOTO DE LAS BOMBAS EN FUNCIONAMIENTO.", "orden": 5}
             ]
         elif tipo_proceso == "PROCESO SEMANAL":
             tareas = [
-                {"nombre": "Revisión semanal de stock", "descripcion": "Realizar inventario semanal completo", "orden": 1},
-                {"nombre": "Limpieza profunda", "descripcion": "Realizar limpieza profunda de todas las áreas", "orden": 2},
-                {"nombre": "Mantenimiento de equipos", "descripcion": "Verificar estado y funcionamiento de todos los equipos", "orden": 3},
-                {"nombre": "Reunión de equipo", "descripcion": "Realizar reunión con el equipo para revisar la semana", "orden": 4}
+                {"nombre": "Cuadre horarios", "descripcion": "El STORE MANAGER debe realizar cuadre de horarios personal para la próxima semana desde el tpv entrar a la aplicación Evolbe, y en el apartado de turnos incorporar la previsión semanal de turnos. Adjuntar imagen del cuadre de horarios y días. Cualquier duda o consulta ponerse en contacto con José Guillen, 696788057", "orden": 1},
+                {"nombre": "Pedidos Reposición", "descripcion": "Pasar pedidos de reposición si falta mercancía. Los pedidos se deben realizar cuando realmente se necesite mercancía, se recomienda realizarlo cada dos semanas para evitar pedidos muy pequeños. Se deben realizar los pedidos de reposición para que tengamos la oferta completa de productos, en los pedidos a ROENCAR el pedido mínimo debe ser de 600€. \n Foto de, pedido realizado a ROENCAR, pedido de LECHE, YOGUR y FRUTAS y de los tiquets de OTRAS COMPRAS", "orden": 2},
+                {"nombre": "Almacén y trastienda", "descripcion": "Se debe tener el almacén y la trastienda en perfecto estado. Foto de trastienda ordenada y limpia y Foto de estanterías ordenadas y limpias identificando con etiquetas lo que tenemos en los estantos.", "orden": 3},
+                {"nombre": "Limpieza - Neveras, Frigos y Congelador", "descripcion": "Se debe realizar limpieza de neveras frigos y congelador que hay en el local. Foto del interior de los frigos y del congelador.", "orden": 4},
+                {"nombre": "Recuento Tarrinas y Vasos Diario (MINI/CLASSIC/MAXI y MINI/MEDIUM/MAXI)", "descripcion": "Indicar en observaciones, Número de tarrinas MINI,CLASSIC y MAXI y el número de vasos MINI,MEDIUM y MAXI. Incluir el número de tarrinas y vasos.", "orden": 5}
             ]
         elif tipo_proceso == "PROCESO MENSUAL":
             tareas = [
-                {"nombre": "Inventario mensual", "descripcion": "Inventario completo de productos", "orden": 1},
-                {"nombre": "Revisión de objetivos", "descripcion": "Evaluar cumplimiento de objetivos del mes", "orden": 2},
-                {"nombre": "Mantenimiento preventivo", "descripcion": "Realizar mantenimiento preventivo de equipos críticos", "orden": 3},
-                {"nombre": "Análisis de ventas", "descripcion": "Analizar el rendimiento de ventas del mes", "orden": 4},
-                {"nombre": "Planificación siguiente mes", "descripcion": "Establecer objetivos para el siguiente mes", "orden": 5}
+                {"nombre": "Sobre documentación", "descripcion": "Se debe rellenar sobre la documentación (albaranes, ingresos,bajas...) A cierre de mes debemos incorporar al sobre de documentación mensual, todos los documentos que deberemos remitir al departamento de contabilidad, quien coordinará la retirada de los sobres con la empresa de mensajería. Cualquier duda consultar con contabilidad@smooy.es", "orden": 1},
+                {"nombre": "Inventario Mensual General", "descripcion": "Se debe llevar a cabo el inventario total de cada tienda. En el TPV un recuento de todas las referencias existentes en la tienda, que permita una comprobación de fechas de caducidad y actualización de la mercancia almacenada en cada una de las tiendas.", "orden": 2},
+                {"nombre": "Limpieza Congelador en Profundidad", "descripcion": "Se debe llevar a cabo una limpieza exhaustiva del congelador vertical y realizar limpieza en profundidad del congelador. Foto del congelador con la puerta abierta", "orden": 3},
+                {"nombre": "Limpieza de persianas exteriores de local ( por dentro y por fuera) ", "descripcion": "Se deben limpiar en profundidad las persianas de cierre del local, interior y exteriormente con la persiana bajada. Si tienen algún grafiti se debe comprar en droguería un quita grafitis. Foto interior y exterior de la persiana.", "orden": 4},
+                {"nombre": "Curso manipulador de alimentos", "descripcion": "Foto del diploma de manipulador de alimentos", "orden": 5},
+		        {"nombre": "Control de higiene manos", "descripcion": "Foto de las manos sin joyas, uñas cortas, limpias y sin esmalte, anotar hora y motivo del último lavado de manos", "orden": 6}
             ]
         else:
             tareas = [
