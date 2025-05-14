@@ -1613,7 +1613,7 @@ def actualizar_aviso(aviso_id: int, aviso_update: AvisoUpdate):
         cursor.execute("""
             SELECT a.*, e.nombre as nombreEstablecimiento, u.Nombre as nombreUsuario 
             FROM avisos a
-            LEFT JOIN Establecimientos e ON a.establecimiento_id = e.id
+            LEFT JOIN establecimientos e ON a.establecimiento_id = e.id
             LEFT JOIN usuarios u ON a.usuario_id = u.ID
             WHERE a.id = %s
         """, (aviso_id,))
@@ -1708,7 +1708,7 @@ def obtener_avisos(establecimiento_id: Optional[int] = Query(None)):
             query = """
                 SELECT a.*, e.nombre AS nombre_establecimiento, u.Nombre AS nombre_usuario, u.apellido
                 FROM avisos a
-                LEFT JOIN Establecimientos e ON a.establecimiento_id = e.id
+                LEFT JOIN establecimientos e ON a.establecimiento_id = e.id
                 LEFT JOIN usuarios u ON a.usuario_id = u.ID
                 WHERE a.establecimiento_id = %s
                 ORDER BY a.fecha_creacion DESC
@@ -1718,7 +1718,7 @@ def obtener_avisos(establecimiento_id: Optional[int] = Query(None)):
             query = """
                 SELECT a.*, e.nombre AS nombre_establecimiento, u.Nombre AS nombre_usuario, u.apellido
                 FROM avisos a
-                LEFT JOIN Establecimientos e ON a.establecimiento_id = e.id
+                LEFT JOIN establecimientos e ON a.establecimiento_id = e.id
                 LEFT JOIN usuarios u ON a.usuario_id = u.ID
                 ORDER BY a.fecha_creacion DESC
             """
@@ -2090,7 +2090,7 @@ def crear_usuario(usuario: UsuarioCreate, current_user: TokenData = Depends(get_
         # Si se proporcionó un establecimiento_id, asignar al usuario a ese establecimiento
         if usuario.establecimiento_id:
             # Verificar que el establecimiento existe
-            cursor.execute("SELECT * FROM Establecimientos WHERE id = %s", (usuario.establecimiento_id,))
+            cursor.execute("SELECT * FROM establecimientos WHERE id = %s", (usuario.establecimiento_id,))
             if not cursor.fetchone():
                 raise HTTPException(status_code=404, 
                                    detail=f"No existe establecimiento con ID {usuario.establecimiento_id}")
@@ -2805,7 +2805,7 @@ async def crear_usuario(usuario_data: dict):
         if "establecimientos" in usuario_data and isinstance(usuario_data["establecimientos"], list):
             for establecimiento_id in usuario_data["establecimientos"]:
                 # Verificar que el establecimiento existe
-                cursor.execute("SELECT id FROM Establecimientos WHERE id = %s", (establecimiento_id,))
+                cursor.execute("SELECT id FROM establecimientos WHERE id = %s", (establecimiento_id,))
                 if cursor.fetchone():
                     # Crear relación usuario-establecimiento
                     cursor.execute(
@@ -4148,7 +4148,7 @@ async def generar_procesos_diarios_v2():
         cursor = conexion.cursor(dictionary=True)
         
         # Obtener establecimientos activos con su nombre
-        cursor.execute("SELECT id, nombre FROM Establecimientos WHERE estado = 'activo'")
+        cursor.execute("SELECT id, nombre FROM establecimientos WHERE estado = 'activo'")
         establecimientos = cursor.fetchall()
         
         fecha_actual = datetime.now().strftime('%Y-%m-%d')
@@ -4220,7 +4220,7 @@ async def generar_procesos_semanales_v2():
         cursor = conexion.cursor(dictionary=True)
         
         # Obtener establecimientos activos con su nombre
-        cursor.execute("SELECT id, nombre FROM Establecimientos WHERE estado = 'activo'")
+        cursor.execute("SELECT id, nombre FROM establecimientos WHERE estado = 'activo'")
         establecimientos = cursor.fetchall()
         
         fecha_actual = datetime.now().strftime('%Y-%m-%d')
@@ -4285,7 +4285,7 @@ async def generar_procesos_mensuales_v2():
         cursor = conexion.cursor(dictionary=True)
         
         # Obtener establecimientos activos con su nombre
-        cursor.execute("SELECT id, nombre FROM Establecimientos WHERE estado = 'activo'")
+        cursor.execute("SELECT id, nombre FROM establecimientos WHERE estado = 'activo'")
         establecimientos = cursor.fetchall()
         
         fecha_actual = datetime.now().strftime('%Y-%m-%d')
@@ -4351,7 +4351,7 @@ def obtener_establecimientos_por_usuario(usuario_id: int = Path(...)):
     try:
         cursor = conexion.cursor(dictionary=True)
         query = """
-        SELECT e.* FROM Establecimientos e
+        SELECT e.* FROM establecimientos e
         JOIN usuario_establecimiento ue ON e.id = ue.establecimiento_id
         WHERE ue.usuario_id = %s
         """
