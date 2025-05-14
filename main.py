@@ -118,17 +118,6 @@ def verificar_tablas():
     try:
         cursor = conexion.cursor()
         
-        # Verificar tabla Establecimientos
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS Establecimientos (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nombre VARCHAR(255) NOT NULL,
-            direccion VARCHAR(255),
-            tipo VARCHAR(100),
-            estado VARCHAR(50)
-        )
-        """)
-        
         # Verificar tabla proceso_comentarios
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS proceso_comentarios (
@@ -799,7 +788,7 @@ def obtener_establecimientos():
         cursor = conexion.cursor(dictionary=True)
         
         # Verificar si la tabla existe (probando con diferentes casos)
-        cursor.execute("SHOW TABLES LIKE 'Establecimientos'")
+        cursor.execute("SHOW TABLES LIKE 'establecimientos'")
         if not cursor.fetchone():
             # Intentar con minúsculas si no encuentra la tabla
             cursor.execute("SHOW TABLES LIKE 'establecimientos'")
@@ -809,7 +798,7 @@ def obtener_establecimientos():
             else:
                 table_name = "establecimientos"
         else:
-            table_name = "Establecimientos"
+            table_name = "establecimientos"
         
         # Consultar los establecimientos
         cursor.execute(f"SELECT * FROM {table_name}")
@@ -3065,7 +3054,7 @@ async def crear_establecimiento(establecimiento_data: Dict[str, Any] = Body(...)
         estado = establecimiento_data.get("estado", "activo")
         
         query = """
-            INSERT INTO Establecimientos (nombre, direccion, tipo, estado)
+            INSERT INTO establecimientos (nombre, direccion, tipo, estado)
             VALUES (%s, %s, %s, %s)
         """
         
