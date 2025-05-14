@@ -4804,47 +4804,39 @@ async def obtener_proceso_tarea(id: int):
     """
     conexion = conectar_db()
     if conexion is None:
-        raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
     
     cursor = None
     try:
         cursor = conexion.cursor(dictionary=True)
-        
-        # Primero verificamos que la tarea existe
-        cursor.execute("SELECT proceso_id FROM proceso_tareas WHERE id = %s", (id,))
+        # Buscar la tarea
+        cursor.execute("SELECT * FROM proceso_tareas WHERE id = %s", (id,))
         tarea = cursor.fetchone()
-        
         if not tarea:
             raise HTTPException(status_code=404, detail=f"Tarea con ID {id} no encontrada")
         
-        proceso_id = tarea["proceso_id"]
+        proceso_id = tarea.get("proceso_id")
+        if not proceso_id:
+            raise HTTPException(status_code=404, detail=f"No se encontró proceso asociado a la tarea {id}")
         
-        # Obtener los datos del proceso
-        cursor.execute("""
-            SELECT p.*, e.nombre as nombre_establecimiento
-            FROM procesos2 p
-            LEFT JOIN establecimientos e ON p.establecimiento_id = e.id
-            WHERE p.id = %s
-        """, (proceso_id,))
-        
+        # Buscar el proceso
+        cursor.execute("SELECT * FROM procesos2 WHERE id = %s", (proceso_id,))
         proceso = cursor.fetchone()
-        
         if not proceso:
             raise HTTPException(status_code=404, detail=f"Proceso con ID {proceso_id} no encontrado")
         
-        # Formatear fechas si es necesario
-        if 'fecha_inicio' in proceso and not isinstance(proceso['fecha_inicio'], str):
-            proceso['fecha_inicio'] = proceso['fecha_inicio'].strftime('%Y-%m-%d')
+        # Convertir fechas a string solo si no son None
+        for fecha_campo in ["fecha_inicio", "fecha_fin"]:
+            if fecha_campo in proceso and proceso[fecha_campo] is not None:
+                proceso[fecha_campo] = proceso[fecha_campo].strftime('%Y-%m-%d')
+            else:
+                proceso[fecha_campo] = None
         
-        if 'fecha_fin' in proceso and not isinstance(proceso['fecha_fin'], str):
-            proceso['fecha_fin'] = proceso['fecha_fin'].strftime('%Y-%m-%d')
-        
-        return {"proceso": proceso}
+        return proceso
     
     except Exception as e:
         print(f"Error al obtener proceso de tarea: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-    
+        raise HTTPException(status_code=500, detail=f"Error al obtener proceso de tarea: {str(e)}")
     finally:
         if cursor:
             cursor.close()
