@@ -4837,8 +4837,7 @@ async def obtener_proceso_tarea(id: int):
                 proceso[fecha_campo] = proceso[fecha_campo].strftime('%Y-%m-%d')
             else:
                 proceso[fecha_campo] = None
-        
-        # Asegurarse de incluir toda la información del establecimiento
+          # Asegurarse de incluir toda la información del establecimiento
         if proceso.get("establecimiento_id") and not proceso.get("nombre_establecimiento"):
             # Si hay un establecimiento_id pero no se obtuvo su nombre, buscar explícitamente
             cursor.execute("SELECT * FROM establecimientos WHERE id = %s", (proceso.get("establecimiento_id"),))
@@ -4849,7 +4848,8 @@ async def obtener_proceso_tarea(id: int):
                 proceso["tipo_establecimiento"] = establecimiento.get("tipo")
                 proceso["estado_establecimiento"] = establecimiento.get("estado")
         
-        return proceso
+        # Envolver el proceso en un objeto para que coincida con lo que la app espera
+        return {"proceso": proceso}
     
     except Exception as e:
         print(f"Error al obtener proceso de tarea: {str(e)}")
