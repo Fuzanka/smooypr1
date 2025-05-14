@@ -4819,8 +4819,14 @@ async def obtener_proceso_tarea(id: int):
         if not proceso_id:
             raise HTTPException(status_code=404, detail=f"No se encontró proceso asociado a la tarea {id}")
         
-        # Buscar el proceso
-        cursor.execute("SELECT * FROM procesos2 WHERE id = %s", (proceso_id,))
+        # Buscar el proceso con JOIN a la tabla de establecimientos
+        query = """
+            SELECT p.*, e.nombre AS nombre_establecimiento, e.direccion, e.tipo, e.estado AS estado_establecimiento
+            FROM procesos2 p
+            LEFT JOIN establecimientos e ON p.establecimiento_id = e.id
+            WHERE p.id = %s
+        """
+        cursor.execute(query, (proceso_id,))
         proceso = cursor.fetchone()
         if not proceso:
             raise HTTPException(status_code=404, detail=f"Proceso con ID {proceso_id} no encontrado")
@@ -4831,6 +4837,17 @@ async def obtener_proceso_tarea(id: int):
                 proceso[fecha_campo] = proceso[fecha_campo].strftime('%Y-%m-%d')
             else:
                 proceso[fecha_campo] = None
+        
+        # Asegurarse de incluir toda la información del establecimiento
+        if proceso.get("establecimiento_id") and not proceso.get("nombre_establecimiento"):
+            # Si hay un establecimiento_id pero no se obtuvo su nombre, buscar explícitamente
+            cursor.execute("SELECT * FROM establecimientos WHERE id = %s", (proceso.get("establecimiento_id"),))
+            establecimiento = cursor.fetchone()
+            if establecimiento:
+                proceso["nombre_establecimiento"] = establecimiento.get("nombre")
+                proceso["direccion_establecimiento"] = establecimiento.get("direccion")
+                proceso["tipo_establecimiento"] = establecimiento.get("tipo")
+                proceso["estado_establecimiento"] = establecimiento.get("estado")
         
         return proceso
     
