@@ -4370,47 +4370,13 @@ def obtener_establecimientos_por_usuario(usuario_id: int = Path(...)):
         if conexion and conexion.is_connected():
             conexion.close()
 
+# Importar módulo personalizado para la configuración del scheduler
+from scheduler_config import setup_scheduler
+
 # Configurar el planificador para la tabla procesos2
-scheduler = AsyncIOScheduler()
+scheduler = setup_scheduler(app, conectar_db)
 
-# Programar las tareas automáticas - usando el formato 'cron' directo
-scheduler.add_job(generar_procesos_diarios_v2, 'cron', hour=7, minute=0)  # Cada día a las 7:00 AM
-scheduler.add_job(generar_procesos_semanales_v2, 'cron', day_of_week='mon', hour=7, minute=0)  # Cada lunes a las 7:00 AM
-scheduler.add_job(generar_procesos_mensuales_v2, 'cron', day=1, hour=7, minute=0)  # El primer día de cada mes a las 7:00 AM
-
-# Añadir IDs explícitos a los trabajos para poder referenciarlos después
-scheduler.add_job(
-    generar_procesos_diarios_v2, 
-    'cron', 
-    hour=7, 
-    minute=0,
-    id='procesos_diarios',
-    name='Generación de procesos diarios',
-    replace_existing=True,
-    max_instances=1
-)
-
-# Añadir un evento de inicio para la aplicación con mejor manejo de errores
-@app.on_event("startup")
-def startup_event():
-    try:
-        print(f"[{datetime.now()}] Iniciando scheduler para generación automática de procesos...")
-        scheduler.start()
-        print(f"[{datetime.now()}] Scheduler iniciado correctamente. Próximas ejecuciones:")
-        
-        # Mostrar las próximas ejecuciones programadas para diagnóstico
-        for job in scheduler.get_jobs():
-            print(f"- {job.name}: próxima ejecución {job.next_run_time}")
-            
-    except Exception as e:
-        print(f"[{datetime.now()}] Error al iniciar el scheduler: {e}")
-        # Intentar reiniciar el scheduler
-        try:
-            scheduler.shutdown()
-            scheduler.start()
-            print(f"[{datetime.now()}] Scheduler reiniciado después de error")
-        except Exception as e2:
-            print(f"[{datetime.now()}] No se pudo reiniciar el scheduler: {e2}")
+# El módulo scheduler_config.py se encarga de configurar y gestionar el scheduler
 
 @app.put("/procesos/{proceso_id}/verificar-completado")
 def verificar_completado(proceso_id: int):
