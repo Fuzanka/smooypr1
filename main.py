@@ -4328,7 +4328,6 @@ def generar_procesos_mensuales_v2():
         if conexion and conexion.is_connected():
             conexion.close()
 
-
 @app.get("/establecimientos/usuario/{usuario_id}")
 def obtener_establecimientos_por_usuario(usuario_id: int = Path(...)):
     """
@@ -4374,20 +4373,44 @@ def obtener_establecimientos_por_usuario(usuario_id: int = Path(...)):
 # Configurar el planificador para la tabla procesos2
 scheduler = AsyncIOScheduler()
 
-# Programar las tareas automáticas
-scheduler.add_job(generar_procesos_diarios_v2, CronTrigger(hour=8, minute=46))  # Cada día a las 7:00 AM
-scheduler.add_job(generar_procesos_semanales_v2, CronTrigger(day_of_week='mon', hour=7, minute=0))  # Cada lunes a las 8:00 AM
-scheduler.add_job(generar_procesos_mensuales_v2, CronTrigger(day=1, hour=7, minute=0))  # El primer día de cada mes a las 9:00 AM
+# Programar las tareas automáticas - usando el formato 'cron' directo
+scheduler.add_job(generar_procesos_diarios_v2, 'cron', hour=7, minute=0)  # Cada día a las 7:00 AM
+scheduler.add_job(generar_procesos_semanales_v2, 'cron', day_of_week='mon', hour=7, minute=0)  # Cada lunes a las 7:00 AM
+scheduler.add_job(generar_procesos_mensuales_v2, 'cron', day=1, hour=7, minute=0)  # El primer día de cada mes a las 7:00 AM
 
-# Añade este evento de inicio para la aplicación
+# Añadir IDs explícitos a los trabajos para poder referenciarlos después
+scheduler.add_job(
+    generar_procesos_diarios_v2, 
+    'cron', 
+    hour=7, 
+    minute=0,
+    id='procesos_diarios',
+    name='Generación de procesos diarios',
+    replace_existing=True,
+    max_instances=1
+)
+
+# Añadir un evento de inicio para la aplicación con mejor manejo de errores
 @app.on_event("startup")
-async def startup_event():
+def startup_event():
     try:
-        print("Iniciando scheduler para generación automática de procesos...")
+        print(f"[{datetime.now()}] Iniciando scheduler para generación automática de procesos...")
         scheduler.start()
-        print("Scheduler iniciado correctamente")
+        print(f"[{datetime.now()}] Scheduler iniciado correctamente. Próximas ejecuciones:")
+        
+        # Mostrar las próximas ejecuciones programadas para diagnóstico
+        for job in scheduler.get_jobs():
+            print(f"- {job.name}: próxima ejecución {job.next_run_time}")
+            
     except Exception as e:
-        print(f"Error al iniciar el scheduler: {e}")
+        print(f"[{datetime.now()}] Error al iniciar el scheduler: {e}")
+        # Intentar reiniciar el scheduler
+        try:
+            scheduler.shutdown()
+            scheduler.start()
+            print(f"[{datetime.now()}] Scheduler reiniciado después de error")
+        except Exception as e2:
+            print(f"[{datetime.now()}] No se pudo reiniciar el scheduler: {e2}")
 
 @app.put("/procesos/{proceso_id}/verificar-completado")
 def verificar_completado(proceso_id: int):
@@ -4569,7 +4592,7 @@ def obtener_comentarios_aviso(aviso_id: int = Path(...)):
     finally:
         if cursor:
             cursor.close()
-        if conexion and conexion.is_connected():
+        if conexion.is_connected():
             conexion.close()
 
 @app.post("/avisos/{aviso_id}/comentarios")
@@ -4654,7 +4677,7 @@ def agregar_comentario_aviso(aviso_id: int, comentario_data: dict = Body(...)):
     finally:
         if cursor:
             cursor.close()
-        if conexion and conexion.is_connected():
+        if conexion.is_connected():
             conexion.close()
 
 @app.delete("/avisos/{aviso_id}/comentarios/{comentario_id}")
@@ -4695,7 +4718,7 @@ async def eliminar_comentario_aviso(aviso_id: int, comentario_id: int, request: 
     finally:
         if cursor:
             cursor.close()
-        if conexion and conexion.is_connected():
+        if conexion.is_connected():
             conexion.close()
 
     # Endpoint para verificar si un proceso está completado
@@ -4790,7 +4813,7 @@ def actualizar_estado_proceso(proceso_id: int, datos: dict = Body(...)):
         finally:
             if cursor:
                 cursor.close()
-            if conexion and conexion.is_connected():
+            if conexion.is_connected():
                 conexion.close()
                 
     except HTTPException:
@@ -4859,5 +4882,5 @@ async def obtener_proceso_tarea(id: int):
     finally:
         if cursor:
             cursor.close()
-        if conexion and conexion.is_connected():
+        if conexion.is_connected():
             conexion.close()
