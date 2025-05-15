@@ -4125,8 +4125,9 @@ async def eliminar_comentario_aviso(aviso_id: int, comentario_id: int, request: 
         if conexion and conexion.is_connected():
             conexion.close()
 
-async def generar_procesos_diarios_v2():
+def generar_procesos_diarios_v2():
     """Genera procesos diarios de tipo APERTURA, CIERRE y TRASCURSO DE JORNADA para todos los establecimientos"""
+    print(f"[{datetime.now()}] Iniciando generación de procesos diarios...")
     conexion = conectar_db()
     if conexion is None:
         print("Error: No se pudo conectar a la base de datos")
@@ -4148,8 +4149,8 @@ async def generar_procesos_diarios_v2():
         # Horarios para cada tipo (ejemplos)
         horarios = {
             "APERTURA": "07:00",
-            "CIERRE": "7:00",
-            "TRASCURSO DE JORNADA": "7:00"
+            "CIERRE": "21:00",
+            "TRASCURSO DE JORNADA": "14:00"
         }
         
         # Por cada establecimiento, crear los tres tipos de procesos diarios
@@ -4188,16 +4189,16 @@ async def generar_procesos_diarios_v2():
                 ))
         
         conexion.commit()
-        print(f"Procesos diarios generados exitosamente para {len(establecimientos)} establecimientos")
+        print(f"[{datetime.now()}] Procesos diarios generados exitosamente para {len(establecimientos)} establecimientos")
     except Exception as e:
-        print(f"Error al generar procesos diarios: {e}")
+        print(f"[{datetime.now()}] Error al generar procesos diarios: {e}")
     finally:
         if cursor:
             cursor.close()
         if conexion and conexion.is_connected():
             conexion.close()
 
-async def generar_procesos_semanales_v2():
+def generar_procesos_semanales_v2():
     """Genera procesos semanales para todos los establecimientos activos"""
     conexion = conectar_db()
     if conexion is None:
@@ -4262,7 +4263,7 @@ async def generar_procesos_semanales_v2():
         if conexion and conexion.is_connected():
             conexion.close()
 
-async def generar_procesos_mensuales_v2():
+def generar_procesos_mensuales_v2():
     """Genera procesos mensuales para todos los establecimientos activos"""
     conexion = conectar_db()
     if conexion is None:
@@ -4326,6 +4327,7 @@ async def generar_procesos_mensuales_v2():
             cursor.close()
         if conexion and conexion.is_connected():
             conexion.close()
+
 
 @app.get("/establecimientos/usuario/{usuario_id}")
 def obtener_establecimientos_por_usuario(usuario_id: int = Path(...)):
