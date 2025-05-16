@@ -204,6 +204,20 @@ inicializar_db()
 
 app = FastAPI()
 
+# Configuración de CORS personalizada
+origins = [
+    "http://127.0.0.1:5500",  # Donde estás corriendo tu HTML
+    # Puedes agregar más si lo necesitas
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Orígenes permitidos
+    allow_credentials=True,
+    allow_methods=["*"],              # Métodos permitidos (GET, POST, etc.)
+    allow_headers=["*"],              # Encabezados permitidos
+)
+
 # Ejecutar verificación de tablas al iniciar
 verificar_tablas()
 
