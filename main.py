@@ -240,9 +240,14 @@ PUBLIC_PATHS = [
 @app.middleware("http")
 async def verify_jwt_token(request: Request, call_next):
     if request.method == "OPTIONS":
-        # Permitir siempre las peticiones OPTIONS (preflight)
-        return await call_next(request)
-
+        response = JSONResponse(status_code=200, content={})
+        # Añadir aquí los headers CORS manualmente para que pase el preflight
+        response.headers["Access-Control-Allow-Origin"] = ", ".join(origins)
+        response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS,PUT,DELETE"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization,Content-Type,Accept"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
+    # resto del middleware...
     path = request.url.path
 
     public_paths = [
