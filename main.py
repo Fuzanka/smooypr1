@@ -206,7 +206,9 @@ app = FastAPI()
 
 # Configuración de CORS personalizada
 origins = [
-    "http://127.0.0.1:5500",  # Donde estás corriendo tu HTML
+    "http://127.0.0.1:5500",
+      "http://localhost:5500",
+    "http://212.227.147.252:5500",  # Donde estás corriendo tu HTML
     # Puedes agregar más si lo necesitas
 ]
 
