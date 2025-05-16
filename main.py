@@ -203,7 +203,7 @@ def inicializar_db():
 inicializar_db()
 
 app = FastAPI()
-
+print("🚀 FastAPI con CORS está corriendo correctamente.")
 # Configuración de CORS personalizada
 origins = [
     "http://127.0.0.1:5500",
