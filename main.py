@@ -241,9 +241,14 @@ PUBLIC_PATHS = [
 # 4. ELIMINA TODOS los demás middlewares verify_jwt_token y usa solo este
 @app.middleware("http")
 async def verify_jwt_token(request: Request, call_next):
-    # Lista completa de rutas públicas
+    if request.method == "OPTIONS":
+        # Permitir siempre las peticiones OPTIONS (preflight)
+        return await call_next(request)
+
+    path = request.url.path
+
     public_paths = [
-        "/login", 
+        "/login",
         "/docs",
         "/openapi.json",
         "/redoc",
@@ -252,32 +257,24 @@ async def verify_jwt_token(request: Request, call_next):
         "/verify-token",
         "/api-status"
     ]
-    
-    path = request.url.path
-    
-    # Si la ruta es pública o comienza con uno de los prefijos públicos, permitir acceso sin token
+
     if path in public_paths or any(path.startswith(prefix) for prefix in ["/static/", "/docs/"]):
         print(f"Acceso a ruta pública: {path}")
         return await call_next(request)
-    
-    # Para rutas protegidas, verificar token JWT
+
     auth_header = request.headers.get("Authorization")
-    
+
     if not auth_header or not auth_header.startswith("Bearer "):
         print(f"🔒 Acceso denegado a {path}: No token proporcionado o formato incorrecto")
         return JSONResponse(
             status_code=401,
             content={"detail": "No se proporcionó un token válido"}
         )
-    
+
     token = auth_header.split(" ")[1]
-    
+
     try:
-        # ⚠️ IMPORTANTE: Usar la SECRET_KEY definida al inicio del archivo
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        
-        # print(f"✅ Token válido para usuario {payload.get('sub')} accediendo a {path}")
-        
         request.state.user = {
             "username": payload.get("sub"),
             "user_id": payload.get("user_id"),
@@ -289,7 +286,7 @@ async def verify_jwt_token(request: Request, call_next):
             status_code=401,
             content={"detail": f"Token inválido: {str(e)}"}
         )
-    
+
     return await call_next(request)
 
 # Definimos un modelo de datos para la solicitud de login
