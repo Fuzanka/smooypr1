@@ -216,8 +216,6 @@ def inicializar_db():
 # Llamar a la función de inicialización una sola vez
 inicializar_db()
 
-app = FastAPI()
-
 # Ejecutar verificación de tablas al iniciar
 verificar_tablas()
 
