@@ -32,17 +32,15 @@ print("🚀 FastAPI con CORS está corriendo correctamente.")
 # Configuración de CORS personalizada
 origins = [
     "http://127.0.0.1:5500",
-      "http://localhost:5500",
-    "http://212.227.147.252:5500",  # Donde estás corriendo tu HTML
-    # Puedes agregar más si lo necesitas
+    "http://localhost:5500"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,            # Orígenes permitidos
+    allow_origins=origins,             # ← importante
     allow_credentials=True,
-    allow_methods=["*"],              # Métodos permitidos (GET, POST, etc.)
-    allow_headers=["*"],              # Encabezados permitidos
+    allow_methods=["*"],
+    allow_headers=["*"],               # ← incluye Authorization
 )
 
 # Configuración JWT - USAR EXACTAMENTE ESTOS VALORES
