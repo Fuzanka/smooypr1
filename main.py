@@ -27,19 +27,6 @@ from typing import Optional
 import uuid
 from passlib.context import CryptContext
 
-# Configuración JWT - USAR EXACTAMENTE ESTOS VALORES
-SECRET_KEY = "tu_clave_secreta_aqui"  # IMPORTANTE: Usa EXACTAMENTE esta clave
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1  # 24 horas
-
-# Configuración de seguridad para contraseñas
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Configuración bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Esquema OAuth2 para autenticación con token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 print("🚀 FastAPI con CORS está corriendo correctamente.")
 # Configuración de CORS personalizada
@@ -57,6 +44,21 @@ app.add_middleware(
     allow_methods=["*"],              # Métodos permitidos (GET, POST, etc.)
     allow_headers=["*"],              # Encabezados permitidos
 )
+
+# Configuración JWT - USAR EXACTAMENTE ESTOS VALORES
+SECRET_KEY = "tu_clave_secreta_aqui"  # IMPORTANTE: Usa EXACTAMENTE esta clave
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 1  # 24 horas
+
+# Configuración de seguridad para contraseñas
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Configuración bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Esquema OAuth2 para autenticación con token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 # Modelos para tokens JWT
 class Token(BaseModel):
