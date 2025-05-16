@@ -32,7 +32,8 @@ print("🚀 FastAPI con CORS está corriendo correctamente.")
 # Configuración de CORS personalizada
 origins = [
     "http://127.0.0.1:5500",
-    "http://localhost:5500"
+    "http://localhost:5500",
+    "http://212.227.147.252:5500"
 ]
 
 app.add_middleware(
