@@ -41,6 +41,23 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Esquema OAuth2 para autenticación con token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+print("🚀 FastAPI con CORS está corriendo correctamente.")
+# Configuración de CORS personalizada
+origins = [
+    "http://127.0.0.1:5500",
+      "http://localhost:5500",
+    "http://212.227.147.252:5500",  # Donde estás corriendo tu HTML
+    # Puedes agregar más si lo necesitas
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,            # Orígenes permitidos
+    allow_credentials=True,
+    allow_methods=["*"],              # Métodos permitidos (GET, POST, etc.)
+    allow_headers=["*"],              # Encabezados permitidos
+)
+
 # Modelos para tokens JWT
 class Token(BaseModel):
     access_token: str
@@ -203,22 +220,7 @@ def inicializar_db():
 inicializar_db()
 
 app = FastAPI()
-print("🚀 FastAPI con CORS está corriendo correctamente.")
-# Configuración de CORS personalizada
-origins = [
-    "http://127.0.0.1:5500",
-      "http://localhost:5500",
-    "http://212.227.147.252:5500",  # Donde estás corriendo tu HTML
-    # Puedes agregar más si lo necesitas
-]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,            # Orígenes permitidos
-    allow_credentials=True,
-    allow_methods=["*"],              # Métodos permitidos (GET, POST, etc.)
-    allow_headers=["*"],              # Encabezados permitidos
-)
 
 # Ejecutar verificación de tablas al iniciar
 verificar_tablas()
