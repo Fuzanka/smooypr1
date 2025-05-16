@@ -27,6 +27,20 @@ from typing import Optional
 import uuid
 from passlib.context import CryptContext
 
+app= FastAPI()
+origins = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://212.227.147.252:5500"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
+)
+
 # Configuración JWT - USAR EXACTAMENTE ESTOS VALORES
 SECRET_KEY = "tu_clave_secreta_aqui"  # IMPORTANTE: Usa EXACTAMENTE esta clave
 ALGORITHM = "HS256"
