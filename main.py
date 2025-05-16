@@ -223,15 +223,6 @@ app.add_middleware(
 # Ejecutar verificación de tablas al iniciar
 verificar_tablas()
 
-# Configurar CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Para desarrollo, en producción especifica dominios
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Primero, definimos correctamente las rutas públicas
 PUBLIC_PATHS = [
     "/login", 
