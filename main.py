@@ -27,24 +27,6 @@ from typing import Optional
 import uuid
 from passlib.context import CryptContext
 
-app = FastAPI()
-
-print("🚀 FastAPI con CORS está corriendo correctamente.")
-# Configuración de CORS personalizada
-origins = [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "http://212.227.147.252:5500"
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,             # ← importante
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],               # ← incluye Authorization
-)
-
 # Configuración JWT - USAR EXACTAMENTE ESTOS VALORES
 SECRET_KEY = "tu_clave_secreta_aqui"  # IMPORTANTE: Usa EXACTAMENTE esta clave
 ALGORITHM = "HS256"
@@ -58,7 +40,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Esquema OAuth2 para autenticación con token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 # Modelos para tokens JWT
 class Token(BaseModel):
@@ -221,6 +202,7 @@ def inicializar_db():
 # Llamar a la función de inicialización una sola vez
 inicializar_db()
 
+app = FastAPI()
 
 # Ejecutar verificación de tablas al iniciar
 verificar_tablas()
