@@ -27,6 +27,7 @@ from typing import Optional
 import uuid
 from passlib.context import CryptContext
 
+app = FastAPI()
 
 print("🚀 FastAPI con CORS está corriendo correctamente.")
 # Configuración de CORS personalizada
@@ -219,8 +220,6 @@ def inicializar_db():
     
 # Llamar a la función de inicialización una sola vez
 inicializar_db()
-
-app = FastAPI()
 
 
 # Ejecutar verificación de tablas al iniciar
