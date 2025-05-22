@@ -4371,7 +4371,8 @@ def obtener_establecimientos_por_usuario(usuario_id: int = Path(...)):
         raise HTTPException(status_code=500, detail=f"Error al consultar la base de datos: {e}")
     finally:
         if cursor:
-            cursor.close()
+     
+           cursor.close()
         if conexion and conexion.is_connected():
             conexion.close()
 
@@ -4854,4 +4855,85 @@ async def obtener_proceso_tarea(id: int):
         if cursor:
             cursor.close()
         if conexion.is_connected():
+            conexion.close()
+# Modelo para la solicitud de cambio de contraseña
+class CambiarPasswordRequest(BaseModel):
+    usuario_id: int
+    password_actual: str
+    password_nueva: str
+
+@app.post("/cambiar-password", response_model=Dict[str, Any])
+async def cambiar_password(datos: CambiarPasswordRequest):
+    """
+    Endpoint para cambiar la contraseña de un usuario.
+    
+    Recibe:
+    - usuario_id: ID del usuario
+    - password_actual: Contraseña actual
+    - password_nueva: Nueva contraseña
+    """
+    try:
+        conexion = conectar_db()
+        if not conexion:
+            return {"success": False, "message": "Error de conexión a la base de datos"}
+            
+        cursor = conexion.cursor(dictionary=True)
+        
+        # Verificar que el usuario existe
+        cursor.execute("SELECT * FROM usuarios WHERE ID = %s", (datos.usuario_id,))
+        usuario = cursor.fetchone()
+        
+        if not usuario:
+            return {"success": False, "message": "Usuario no encontrado"}
+        
+        # Determinar el nombre de la columna de contraseña
+        password_column = None
+        for possible_column in ['Contraseña', 'contraseña', 'contrasena', 'password']:
+            if possible_column in usuario:
+                password_column = possible_column
+                break
+        
+        if not password_column:
+            return {"success": False, "message": "Error de configuración del servidor"}
+        
+        # Obtener la contraseña almacenada
+        stored_password = usuario[password_column]
+        
+        # Caso especial para usuarios de prueba
+        if usuario["usuario"] in ["AdminSMOOY", "StaffSMOOY"] and datos.password_actual == "SMOOY":
+            is_password_correct = True
+        else:
+            # Verificar si la contraseña actual es correcta
+            # Comprobar si es un hash de bcrypt o texto plano
+            if stored_password.startswith('$2'):
+                # Es un hash bcrypt
+                is_password_correct = pwd_context.verify(datos.password_actual, stored_password)
+            else:
+                # Texto plano (fallback)
+                is_password_correct = (datos.password_actual == stored_password)
+        
+        if not is_password_correct:
+            return {"success": False, "message": "La contraseña actual es incorrecta"}
+        
+        # Generar hash de la nueva contraseña
+        hashed_password = pwd_context.hash(datos.password_nueva)
+        
+        # Actualizar la contraseña en la base de datos
+        query = f"UPDATE usuarios SET {password_column} = %s WHERE ID = %s"
+        cursor.execute(query, (hashed_password, datos.usuario_id))
+        conexion.commit()
+        
+        return {
+            "success": True,
+            "message": "Contraseña actualizada correctamente"
+        }
+        
+    except Exception as e:
+        print(f"Error al cambiar contraseña: {str(e)}")
+        return {"success": False, "message": f"Error al cambiar contraseña: {str(e)}"}
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
             conexion.close()
