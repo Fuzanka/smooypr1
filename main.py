@@ -4907,16 +4907,14 @@ async def cambiar_password(datos: CambiarPasswordRequest):
         if datos.password_actual == datos.password_nueva:
             return {"success": False, "message": "La nueva contraseña debe ser diferente a la actual"}
         
-        # Verificar contraseña actual
+        # Verificar contraseña actual - ELIMINADO el caso especial para AdminSMOOY y StaffSMOOY
         is_password_correct = False
         
-        if usuario["usuario"] in ["AdminSMOOY", "StaffSMOOY"] and datos.password_actual == "SMOOY":
-            is_password_correct = True
+        # Verificación estándar para cualquier usuario, sin excepciones
+        if stored_password and stored_password.startswith('$2'):
+            is_password_correct = pwd_context.verify(datos.password_actual, stored_password)
         else:
-            if stored_password and stored_password.startswith('$2'):
-                is_password_correct = pwd_context.verify(datos.password_actual, stored_password)
-            else:
-                is_password_correct = (datos.password_actual == stored_password)
+            is_password_correct = (datos.password_actual == stored_password)
         
         if not is_password_correct:
             return {"success": False, "message": "La contraseña actual es incorrecta"}
@@ -4968,7 +4966,6 @@ async def cambiar_password(datos: CambiarPasswordRequest):
         if conexion and conexion.is_connected():
             conexion.close()
 
-
 # 2. ENDPOINT DE LOGIN MEJORADO CON VERIFICACIÓN DE TIMESTAMP
 @app.post("/login")
 async def login(request: LoginRequest):
@@ -5001,19 +4998,17 @@ async def login(request: LoginRequest):
         
         stored_password = usuario[password_column]
         
-        # Verificar contraseña
+        # Verificar contraseña - ELIMINADO el bypass para AdminSMOOY y StaffSMOOY
         password_valid = False
-        if usuario["usuario"] in ["AdminSMOOY", "StaffSMOOY"] and request.contraseña == "SMOOY":
-            password_valid = True
-        elif stored_password and stored_password.startswith('$2'):
+        
+        # Verificación estándar para cualquier usuario
+        if stored_password and stored_password.startswith('$2'):
             password_valid = pwd_context.verify(request.contraseña, stored_password)
         else:
             password_valid = (request.contraseña == stored_password)
         
         if not password_valid:
             print(f"[LOGIN] Contraseña incorrecta para usuario: {request.usuario}")
-            print(f"[LOGIN] Contraseña ingresada: {request.contraseña}")
-            print(f"[LOGIN] Hash almacenado: {stored_password[:50]}...")
             return LoginResponse(success=False, message="Usuario o contraseña incorrectos")
         
         # Generar nuevo token
