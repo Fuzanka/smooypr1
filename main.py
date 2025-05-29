@@ -5031,3 +5031,129 @@ async def login(request: LoginRequest):
             cursor.close()
         if conexion and conexion.is_connected():
             conexion.close()
+
+
+# Clase para el envío masivo de avisos
+class AvisoMasivo(BaseModel):
+    nombre: str
+    categoria: str
+    descripcion: str
+    establecimientos: List[int]  # Lista de IDs de establecimientos
+    usuarioId: int
+
+@app.post("/avisos/masivo")
+async def enviar_aviso_masivo(aviso_masivo: AvisoMasivo):
+    """
+    Endpoint para crear avisos masivos para múltiples establecimientos
+    Solo accesible para usuarios con rol Admin
+    """
+    conexion = conectar_db()
+    if conexion is None:
+        raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+    
+    cursor = None
+    try:
+        cursor = conexion.cursor()
+        
+        # Verificar que los establecimientos existan
+        for est_id in aviso_masivo.establecimientos:
+            cursor.execute("SELECT id FROM establecimientos WHERE id = %s", (est_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail=f"Establecimiento con ID {est_id} no encontrado")
+        
+        # Crear un aviso para cada establecimiento
+        avisos_creados = []
+        fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        for est_id in aviso_masivo.establecimientos:
+            # Insertar aviso
+            query = """
+                INSERT INTO avisos (nombre, categoria, descripcion, establecimiento_id, usuario_id, fecha_creacion, estado)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            valores = (
+                aviso_masivo.nombre,
+                aviso_masivo.categoria,
+                aviso_masivo.descripcion,
+                est_id,
+                aviso_masivo.usuarioId,
+                fecha_actual,
+                "Pendiente"
+            )
+            
+            cursor.execute(query, valores)
+            aviso_id = cursor.lastrowid
+            
+            avisos_creados.append({
+                "id": aviso_id,
+                "establecimientoId": est_id
+            })
+        
+        conexion.commit()
+        
+        return {
+            "success": True,
+            "message": f"Se crearon {len(avisos_creados)} avisos exitosamente",
+            "avisos": avisos_creados
+        }
+    
+    except Exception as e:
+        if conexion:
+            conexion.rollback()
+        print(f"Error al crear avisos masivos: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al crear avisos masivos: {str(e)}")
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
+
+@app.get("/establecimientos/todos")
+async def obtener_todos_establecimientos(request: Request):
+    """
+    Obtiene todos los establecimientos sin filtro
+    Solo accesible para usuarios con rol Admin
+    """
+    # Verificar que el usuario sea administrador
+    if not request.state.user or request.state.user.get("role") != "Admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado. Se requiere rol de administrador."
+        )
+    
+    conexion = conectar_db()
+    if conexion is None:
+        raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+    
+    cursor = None
+    try:
+        cursor = conexion.cursor(dictionary=True)
+        
+        # Consultar todos los establecimientos
+        cursor.execute("SELECT * FROM establecimientos ORDER BY nombre")
+        establecimientos = cursor.fetchall()
+        
+        # Formatear los resultados para garantizar consistencia
+        formatted_establecimientos = []
+        for establecimiento in establecimientos:
+            formatted_establecimiento = {
+                "id": establecimiento.get('id') or establecimiento.get('ID'),
+                "nombre": establecimiento.get('nombre') or establecimiento.get('Nombre'),
+                "direccion": establecimiento.get('direccion') or establecimiento.get('Direccion', ''),
+                "tipo": establecimiento.get('tipo') or establecimiento.get('Tipo', ''),
+                "estado": establecimiento.get('estado') or establecimiento.get('Estado', 'activo')
+            }
+            formatted_establecimientos.append(formatted_establecimiento)
+        
+        return {"establecimientos": formatted_establecimientos}
+    
+    except Error as e:
+        print(f"Error al consultar establecimientos: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al consultar la base de datos: {e}")
+    
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
