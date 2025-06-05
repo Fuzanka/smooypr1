@@ -44,7 +44,7 @@ app.add_middleware(
 # Configuración JWT - USAR EXACTAMENTE ESTOS VALORES
 SECRET_KEY = "tu_clave_secreta_aqui"  # IMPORTANTE: Usa EXACTAMENTE esta clave
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1  # 24 horas
+ACCESS_TOKEN_EXPIRE_MINUTES = 525600
 
 # Configuración de seguridad para contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
