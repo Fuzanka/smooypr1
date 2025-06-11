@@ -2455,7 +2455,7 @@ from typing import Optional
 # Configuración de JWT
 SECRET_KEY = "tu_clave_secreta_compleja_aqui"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 horas
+ACCESS_TOKEN_EXPIRE_MINUTES = 525600  # 24 horas
 
 # Configuración de bcrypt para hashing de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
