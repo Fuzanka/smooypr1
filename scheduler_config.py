@@ -41,7 +41,7 @@ def setup_scheduler(app, conectar_db):
         max_instances=1
     )
     
-    # Define synchronous wrapper functions for the scheduler
+    # Define synchronous wrapper functions for the scheduler    
     def generar_procesos_diarios_v2():
         """Wrapper for process generation to handle async functions in scheduler"""
         try:
@@ -71,9 +71,28 @@ def setup_scheduler(app, conectar_db):
                     "TRASCURSO DE JORNADA": "14:00"
                 }
                 
+                # Contador de procesos creados y existentes
+                procesos_creados = 0
+                procesos_existentes = 0
+                
                 # Por cada establecimiento, crear los tres tipos de procesos diarios
                 for establecimiento in establecimientos:
                     for tipo in tipos_diarios:
+                        # Verificar si ya existe un proceso de este tipo para este establecimiento y fecha
+                        cursor.execute("""
+                            SELECT id FROM procesos2 
+                            WHERE tipo_proceso = %s 
+                            AND establecimiento_id = %s 
+                            AND fecha_inicio = %s
+                        """, (tipo, establecimiento["id"], fecha_actual))
+                        
+                        proceso_existente = cursor.fetchone()
+                        
+                        if proceso_existente:
+                            # El proceso ya existe, no crear uno nuevo
+                            procesos_existentes += 1
+                            continue
+                        
                         # Datos para el proceso
                         datos_proceso = {
                             "tipo_proceso": tipo,
@@ -105,9 +124,10 @@ def setup_scheduler(app, conectar_db):
                             datos_proceso["establecimiento_id"],
                             datos_proceso["usuario_id"]
                         ))
+                        procesos_creados += 1
                 
                 conexion.commit()
-                logger.info(f"Procesos diarios generados exitosamente para {len(establecimientos)} establecimientos")
+                logger.info(f"Procesos diarios: {procesos_creados} creados")
             except Exception as e:
                 logger.error(f"Error al generar procesos diarios: {str(e)}")
             finally:
@@ -116,8 +136,7 @@ def setup_scheduler(app, conectar_db):
                 if conexion and conexion.is_connected():
                     conexion.close()
         except Exception as e:
-            logger.error(f"Error general en generación de procesos diarios: {str(e)}")
-
+            logger.error(f"Error general en generación de procesos diarios: {str(e)}")    
     def generar_procesos_semanales_v2():
         """Wrapper for weekly process generation to handle async functions in scheduler"""
         try:
@@ -141,8 +160,27 @@ def setup_scheduler(app, conectar_db):
                 # Calcular la fecha de fin (una semana después)
                 fecha_fin = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
                 
+                # Contador de procesos creados y existentes
+                procesos_creados = 0
+                procesos_existentes = 0
+                
                 # Por cada establecimiento, crear proceso semanal
                 for establecimiento in establecimientos:
+                    # Verificar si ya existe un proceso semanal para este establecimiento y fecha
+                    cursor.execute("""
+                        SELECT id FROM procesos2 
+                        WHERE tipo_proceso = 'PROCESO SEMANAL' 
+                        AND establecimiento_id = %s 
+                        AND fecha_inicio = %s
+                    """, (establecimiento["id"], fecha_actual))
+                    
+                    proceso_existente = cursor.fetchone()
+                    
+                    if proceso_existente:
+                        # El proceso ya existe, no crear uno nuevo
+                        procesos_existentes += 1
+                        continue
+                    
                     # Datos para el proceso semanal
                     datos_proceso = {
                         "tipo_proceso": "PROCESO SEMANAL",
@@ -174,9 +212,10 @@ def setup_scheduler(app, conectar_db):
                         datos_proceso["establecimiento_id"],
                         datos_proceso["usuario_id"]
                     ))
+                    procesos_creados += 1
                 
                 conexion.commit()
-                logger.info(f"Procesos semanales generados exitosamente para {len(establecimientos)} establecimientos")
+                logger.info(f"Procesos semanales: {procesos_creados} creados")
             except Exception as e:
                 logger.error(f"Error al generar procesos semanales: {str(e)}")
             finally:
@@ -185,8 +224,8 @@ def setup_scheduler(app, conectar_db):
                 if conexion and conexion.is_connected():
                     conexion.close()
         except Exception as e:
-            logger.error(f"Error general en generación de procesos semanales: {str(e)}")
-
+            logger.error(f"Error general en generación de procesos semanales: {str(e)}")    
+            
     def generar_procesos_mensuales_v2():
         """Wrapper for monthly process generation to handle async functions in scheduler"""
         try:
@@ -210,8 +249,27 @@ def setup_scheduler(app, conectar_db):
                 # Calcular la fecha de fin (un mes después aproximadamente)
                 fecha_fin = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
                 
+                # Contador de procesos creados y existentes
+                procesos_creados = 0
+                procesos_existentes = 0
+                
                 # Por cada establecimiento, crear proceso mensual
                 for establecimiento in establecimientos:
+                    # Verificar si ya existe un proceso mensual para este establecimiento y fecha
+                    cursor.execute("""
+                        SELECT id FROM procesos2 
+                        WHERE tipo_proceso = 'PROCESO MENSUAL' 
+                        AND establecimiento_id = %s 
+                        AND fecha_inicio = %s
+                    """, (establecimiento["id"], fecha_actual))
+                    
+                    proceso_existente = cursor.fetchone()
+                    
+                    if proceso_existente:
+                        # El proceso ya existe, no crear uno nuevo
+                        procesos_existentes += 1
+                        continue
+                    
                     # Datos para el proceso mensual
                     datos_proceso = {
                         "tipo_proceso": "PROCESO MENSUAL",
@@ -243,9 +301,10 @@ def setup_scheduler(app, conectar_db):
                         datos_proceso["establecimiento_id"],
                         datos_proceso["usuario_id"]
                     ))
+                    procesos_creados += 1
                 
                 conexion.commit()
-                logger.info(f"Procesos mensuales generados exitosamente para {len(establecimientos)} establecimientos")
+                logger.info(f"Procesos mensuales: {procesos_creados} creados")
             except Exception as e:
                 logger.error(f"Error al generar procesos mensuales: {str(e)}")
             finally:
@@ -254,7 +313,7 @@ def setup_scheduler(app, conectar_db):
                 if conexion and conexion.is_connected():
                     conexion.close()
         except Exception as e:
-            logger.error(f"Error general en generación de procesos mensuales: {str(e)}")    
+            logger.error(f"Error general en generación de procesos mensuales: {str(e)}")
 
     # Configure scheduled jobs with proper IDs and error handling
     scheduler.add_job(
